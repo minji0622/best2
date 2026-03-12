@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>회원 관리 시스템</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f0f13;
+      --surface: #17171f;
+      --surface2: #1e1e2a;
+      --border: #2a2a3a;
+      --accent: #6c63ff;
+      --accent2: #ff6b9d;
+      --green: #4ade80;
+      --yellow: #fbbf24;
+      --text: #e8e8f0;
+      --text2: #8888a8;
+      --text3: #55556a;
+      --red: #f87171;
+      --radius: 10px;
+    }
+
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Header ── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .logo {
+      font-weight: 700;
+      font-size: 1.1rem;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .logo-dot {
+      width: 10px; height: 10px;
+      background: var(--accent);
+      border-radius: 50%;
+      box-shadow: 0 0 10px var(--accent);
+    }
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    #member-count {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--text2);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      padding: 4px 12px;
+      border-radius: 20px;
+    }
+
+    /* ── Layout ── */
+    .app {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      height: calc(100vh - 60px);
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 320px;
+      min-width: 320px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .sidebar-top {
+      padding: 1rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      padding: 10px 16px;
+      font-family: inherit;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      transition: opacity .15s, transform .1s;
+    }
+    .btn-primary:hover { opacity: .85; }
+    .btn-primary:active { transform: scale(.98); }
+
+    .search-box {
+      position: relative;
+    }
+    .search-box input {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 9px 12px 9px 36px;
+      font-family: inherit;
+      font-size: 0.85rem;
+      color: var(--text);
+      outline: none;
+      transition: border-color .2s;
+    }
+    .search-box input:focus { border-color: var(--accent); }
+    .search-box input::placeholder { color: var(--text3); }
+    .search-icon {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text3);
+      font-size: 0.9rem;
+    }
+
+    .filter-row {
+      display: flex;
+      gap: 6px;
+    }
+    .filter-btn {
+      flex: 1;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text2);
+      border-radius: 6px;
+      padding: 6px 8px;
+      font-family: inherit;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .filter-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .member-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0.5rem;
+    }
+    .member-list::-webkit-scrollbar { width: 4px; }
+    .member-list::-webkit-scrollbar-track { background: transparent; }
+    .member-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    .member-card {
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all .15s;
+      margin-bottom: 4px;
+    }
+    .member-card:hover { background: var(--surface2); }
+    .member-card.active { background: var(--surface2); border-color: var(--accent); }
+    .member-card-name {
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .member-card-sub {
+      font-size: 0.78rem;
+      color: var(--text2);
+      font-family: 'DM Mono', monospace;
+    }
+    .badge {
+      font-size: 0.65rem;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+    }
+    .badge-vip { background: rgba(251,191,36,.15); color: var(--yellow); border: 1px solid rgba(251,191,36,.3); }
+    .badge-new { background: rgba(74,222,128,.15); color: var(--green); border: 1px solid rgba(74,222,128,.3); }
+    .badge-regular { background: rgba(136,136,168,.1); color: var(--text2); border: 1px solid var(--border); }
+
+    .empty-state {
+      text-align: center;
+      color: var(--text3);
+      padding: 3rem 1rem;
+      font-size: 0.85rem;
+      line-height: 1.8;
+    }
+
+    /* ── Detail Panel ── */
+    .detail {
+      flex: 1;
+      overflow-y: auto;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+    .detail::-webkit-scrollbar { width: 4px; }
+    .detail::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    .no-selection {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 1rem;
+      color: var(--text3);
+    }
+    .no-selection-icon { font-size: 4rem; opacity: .3; }
+
+    .detail-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .detail-name {
+      font-size: 1.8rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .detail-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .btn-icon {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text2);
+      border-radius: var(--radius);
+      padding: 8px 14px;
+      font-family: inherit;
+      font-size: 0.8rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all .15s;
+    }
+    .btn-icon:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-danger:hover { border-color: var(--red); color: var(--red); }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+    }
+    .info-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.2rem;
+    }
+    .info-card.full { grid-column: 1 / -1; }
+    .info-label {
+      font-size: 0.72rem;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+    .info-value {
+      font-size: 0.95rem;
+      color: var(--text);
+      font-weight: 500;
+    }
+    .info-value.mono { font-family: 'DM Mono', monospace; font-size: 0.88rem; }
+
+    /* ── Orders ── */
+    .section-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text2);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+    .order-list { display: flex; flex-direction: column; gap: 8px; }
+    .order-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .order-name { font-size: 0.88rem; font-weight: 500; }
+    .order-meta { font-size: 0.78rem; color: var(--text2); font-family: 'DM Mono', monospace; }
+    .order-price { font-family: 'DM Mono', monospace; font-weight: 600; color: var(--green); font-size: 0.92rem; }
+
+    .add-order-btn {
+      background: transparent;
+      border: 1px dashed var(--border);
+      color: var(--text3);
+      border-radius: var(--radius);
+      padding: 10px;
+      font-family: inherit;
+      font-size: 0.82rem;
+      cursor: pointer;
+      width: 100%;
+      transition: all .15s;
+    }
+    .add-order-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── Memos ── */
+    .memo-list { display: flex; flex-direction: column; gap: 8px; }
+    .memo-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      position: relative;
+    }
+    .memo-text { font-size: 0.88rem; line-height: 1.6; margin-bottom: 8px; }
+    .memo-footer { display: flex; justify-content: space-between; align-items: center; }
+    .memo-author { font-size: 0.75rem; color: var(--text3); font-family: 'DM Mono', monospace; }
+    .memo-delete {
+      background: none;
+      border: none;
+      color: var(--text3);
+      cursor: pointer;
+      font-size: 0.75rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      transition: all .15s;
+    }
+    .memo-delete:hover { color: var(--red); background: rgba(248,113,113,.1); }
+
+    .memo-form {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .memo-input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      padding: 12px 14px;
+      font-family: inherit;
+      font-size: 0.88rem;
+      color: var(--text);
+      resize: none;
+      outline: none;
+      min-height: 80px;
+    }
+    .memo-input::placeholder { color: var(--text3); }
+    .memo-form-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      border-top: 1px solid var(--border);
+      background: var(--surface2);
+    }
+    .author-input {
+      background: transparent;
+      border: none;
+      color: var(--text2);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.78rem;
+      outline: none;
+      width: 120px;
+    }
+    .author-input::placeholder { color: var(--text3); }
+    .memo-submit {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 14px;
+      font-family: inherit;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity .15s;
+    }
+    .memo-submit:hover { opacity: .8; }
+
+    /* ── Modal ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.6);
+      backdrop-filter: blur(4px);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 2rem;
+      width: 100%;
+      max-width: 520px;
+      max-height: 90vh;
+      overflow-y: auto;
+      animation: slideUp .25s ease;
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .modal-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .modal-close {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text2);
+      border-radius: 6px;
+      width: 30px; height: 30px;
+      cursor: pointer;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .form-group { margin-bottom: 1rem; }
+    .form-label {
+      display: block;
+      font-size: 0.78rem;
+      color: var(--text2);
+      margin-bottom: 6px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .form-input, .form-select {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px 12px;
+      font-family: inherit;
+      font-size: 0.88rem;
+      color: var(--text);
+      outline: none;
+      transition: border-color .2s;
+    }
+    .form-input:focus, .form-select:focus { border-color: var(--accent); }
+    .form-input::placeholder { color: var(--text3); }
+    .form-select option { background: var(--surface); }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .modal-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 1.5rem; }
+    .btn-secondary {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text2);
+      border-radius: var(--radius);
+      padding: 10px 20px;
+      font-family: inherit;
+      font-size: 0.88rem;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .btn-secondary:hover { border-color: var(--text2); }
+    .btn-submit {
+      background: var(--accent);
+      border: none;
+      color: #fff;
+      border-radius: var(--radius);
+      padding: 10px 24px;
+      font-family: inherit;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity .15s;
+    }
+    .btn-submit:hover { opacity: .85; }
+
+    /* ── Order Modal ── */
+    .total-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 14px;
+      background: var(--surface2);
+      border-radius: var(--radius);
+      margin-top: 8px;
+    }
+    .total-label { font-size: 0.85rem; color: var(--text2); }
+    .total-amount { font-family: 'DM Mono', monospace; font-weight: 700; color: var(--green); font-size: 1rem; }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 20px;
+      font-size: 0.85rem;
+      z-index: 999;
+      animation: slideUp .3s ease;
+      box-shadow: 0 8px 30px rgba(0,0,0,.4);
+    }
+    .toast.success { border-color: var(--green); color: var(--green); }
+    .toast.error { border-color: var(--red); color: var(--red); }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-dot"></div>
+    회원 관리 시스템
+  </div>
+  <div class="header-right">
+    <span id="member-count">0명의 회원</span>
+    <button class="btn-primary" style="width:auto;padding:8px 16px;" onclick="openAddModal()">+ 회원 추가</button>
+  </div>
+</header>
+
+<div class="app">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-top">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="search-input" placeholder="이름, 연락처로 검색..." oninput="renderList()" />
+      </div>
+      <div class="filter-row">
+        <button class="filter-btn active" data-filter="all" onclick="setFilter('all', this)">전체</button>
+        <button class="filter-btn" data-filter="vip" onclick="setFilter('vip', this)">VIP</button>
+        <button class="filter-btn" data-filter="regular" onclick="setFilter('regular', this)">일반</button>
+        <button class="filter-btn" data-filter="new" onclick="setFilter('new', this)">신규</button>
+      </div>
+    </div>
+    <div class="member-list" id="member-list"></div>
+  </div>
+
+  <!-- Detail -->
+  <div class="detail" id="detail-panel">
+    <div class="no-selection">
+      <div class="no-selection-icon">👥</div>
+      <div>왼쪽에서 회원을 선택하거나<br/>새 회원을 추가하세요</div>
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Member Modal -->
+<div class="modal-overlay" id="member-modal">
+  <div class="modal">
+    <div class="modal-title">
+      <span id="modal-title-text">회원 추가</span>
+      <button class="modal-close" onclick="closeModal('member-modal')">✕</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">이름 *</label>
+        <input class="form-input" id="f-name" placeholder="홍길동" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">등급</label>
+        <select class="form-select" id="f-grade">
+          <option value="new">신규</option>
+          <option value="regular">일반</option>
+          <option value="vip">VIP</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">연락처 *</label>
+      <input class="form-input" id="f-phone" placeholder="010-0000-0000" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">이메일</label>
+      <input class="form-input" id="f-email" placeholder="example@email.com" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">주소</label>
+      <input class="form-input" id="f-address" placeholder="서울시 강남구..." />
+    </div>
+    <div class="form-group">
+      <label class="form-label">생년월일</label>
+      <input class="form-input" id="f-birth" type="date" />
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('member-modal')">취소</button>
+      <button class="btn-submit" onclick="saveMember()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Order Modal -->
+<div class="modal-overlay" id="order-modal">
+  <div class="modal">
+    <div class="modal-title">
+      <span>주문 추가</span>
+      <button class="modal-close" onclick="closeModal('order-modal')">✕</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">상품명 *</label>
+      <input class="form-input" id="o-name" placeholder="상품명을 입력하세요" />
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">금액 (원) *</label>
+        <input class="form-input" id="o-price" type="number" placeholder="0" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">수량</label>
+        <input class="form-input" id="o-qty" type="number" value="1" min="1" />
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">주문일</label>
+      <input class="form-input" id="o-date" type="date" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">비고</label>
+      <input class="form-input" id="o-note" placeholder="추가 메모" />
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('order-modal')">취소</button>
+      <button class="btn-submit" onclick="saveOrder()">저장</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── State ──
+let members = [];
+let selectedId = null;
+let editingId = null;
+let currentFilter = 'all';
+const STORAGE_KEY = 'members_v1';
+
+// ── LocalStorage (shared via shared storage in Claude artifacts, here localStorage) ──
+function load() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    members = raw ? JSON.parse(raw) : sampleData();
+  } catch { members = sampleData(); }
+  save();
+}
+
+function save() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(members));
+}
+
+function sampleData() {
+  return [
+    {
+      id: uid(), name: '김민준', phone: '010-1234-5678', email: 'minjun@email.com',
+      address: '서울시 강남구 테헤란로 123', birth: '1990-05-15', grade: 'vip',
+      orders: [
+        { id: uid(), name: '프리미엄 패키지', price: 150000, qty: 1, date: '2024-11-01', note: '' },
+        { id: uid(), name: '추가 서비스', price: 50000, qty: 2, date: '2024-12-15', note: '할인 적용' }
+      ],
+      memos: [
+        { id: uid(), text: 'VIP 전용 혜택 안내 완료. 다음 방문 시 사은품 증정 예정.', author: '김직원', time: '2024-12-01 14:30' }
+      ],
+      createdAt: '2024-01-10'
+    },
+    {
+      id: uid(), name: '이서연', phone: '010-9876-5432', email: 'seoyeon@email.com',
+      address: '서울시 서초구 방배동 45', birth: '1995-08-22', grade: 'regular',
+      orders: [
+        { id: uid(), name: '기본 상품', price: 30000, qty: 3, date: '2025-01-05', note: '' }
+      ],
+      memos: [],
+      createdAt: '2024-06-20'
+    },
+    {
+      id: uid(), name: '박지호', phone: '010-5555-7777', email: '', address: '경기도 성남시 분당구', birth: '', grade: 'new',
+      orders: [],
+      memos: [{ id: uid(), text: '첫 방문 고객. 제품 설명 진행함.', author: '박직원', time: '2025-03-10 10:00' }],
+      createdAt: '2025-03-10'
+    }
+  ];
+}
+
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+
+// ── Render List ──
+function renderList() {
+  const q = document.getElementById('search-input').value.toLowerCase();
+  const list = document.getElementById('member-list');
+  const filtered = members.filter(m => {
+    const matchFilter = currentFilter === 'all' || m.grade === currentFilter;
+    const matchSearch = !q || m.name.includes(q) || m.phone.includes(q) || (m.email || '').toLowerCase().includes(q);
+    return matchFilter && matchSearch;
+  });
+  document.getElementById('member-count').textContent = `${members.length}명의 회원`;
+
+  if (!filtered.length) {
+    list.innerHTML = `<div class="empty-state">검색 결과가 없습니다</div>`;
+    return;
+  }
+  list.innerHTML = filtered.map(m => `
+    <div class="member-card ${m.id === selectedId ? 'active' : ''}" onclick="selectMember('${m.id}')">
+      <div class="member-card-name">
+        ${m.name}
+        <span class="badge badge-${m.grade}">${gradeLabel(m.grade)}</span>
+      </div>
+      <div class="member-card-sub">${m.phone}</div>
+    </div>
+  `).join('');
+}
+
+function gradeLabel(g) { return {vip:'VIP',regular:'일반',new:'신규'}[g] || g; }
+
+// ── Select Member ──
+function selectMember(id) {
+  selectedId = id;
+  renderList();
+  renderDetail();
+}
+
+function renderDetail() {
+  const panel = document.getElementById('detail-panel');
+  if (!selectedId) {
+    panel.innerHTML = `<div class="no-selection"><div class="no-selection-icon">👥</div><div>회원을 선택하세요</div></div>`;
+    return;
+  }
+  const m = members.find(x => x.id === selectedId);
+  if (!m) return;
+
+  const totalSpend = m.orders.reduce((s, o) => s + o.price * o.qty, 0);
+
+  panel.innerHTML = `
+    <div class="detail-header">
+      <div>
+        <div class="detail-name">
+          ${m.name}
+          <span class="badge badge-${m.grade}">${gradeLabel(m.grade)}</span>
+        </div>
+        <div style="color:var(--text3);font-size:.8rem;margin-top:4px;font-family:'DM Mono',monospace;">가입일 ${m.createdAt}</div>
+      </div>
+      <div class="detail-actions">
+        <button class="btn-icon" onclick="openEditModal('${m.id}')">✏️ 편집</button>
+        <button class="btn-icon btn-danger" onclick="deleteMember('${m.id}')">🗑️ 삭제</button>
+      </div>
+    </div>
+
+    <div class="info-grid">
+      <div class="info-card">
+        <div class="info-label">연락처</div>
+        <div class="info-value mono">${m.phone}</div>
+      </div>
+      <div class="info-card">
+        <div class="info-label">이메일</div>
+        <div class="info-value">${m.email || '—'}</div>
+      </div>
+      <div class="info-card full">
+        <div class="info-label">주소</div>
+        <div class="info-value">${m.address || '—'}</div>
+      </div>
+      <div class="info-card">
+        <div class="info-label">생년월일</div>
+        <div class="info-value mono">${m.birth || '—'}</div>
+      </div>
+      <div class="info-card">
+        <div class="info-label">총 구매금액</div>
+        <div class="info-value mono" style="color:var(--green)">${totalSpend.toLocaleString()}원</div>
+      </div>
+    </div>
+
+    <div class="section-title">주문 내역</div>
+    <div class="order-list" id="order-list">
+      ${m.orders.length ? m.orders.map(o => `
+        <div class="order-item">
+          <div>
+            <div class="order-name">${o.name} <span style="color:var(--text3);font-size:.8rem">×${o.qty}</span></div>
+            <div class="order-meta">${o.date}${o.note ? ' · ' + o.note : ''}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="order-price">${(o.price * o.qty).toLocaleString()}원</div>
+            <button class="memo-delete" onclick="deleteOrder('${o.id}')">✕</button>
+          </div>
+        </div>
+      `).join('') : '<div style="color:var(--text3);font-size:.85rem;padding:8px 4px;">주문 내역이 없습니다</div>'}
+    </div>
+    <button class="add-order-btn" onclick="openOrderModal()">+ 주문 추가</button>
+
+    <div class="section-title">메모</div>
+    <div class="memo-list" id="memo-list">
+      ${m.memos.length ? m.memos.map(memo => `
+        <div class="memo-item">
+          <div class="memo-text">${escapeHtml(memo.text)}</div>
+          <div class="memo-footer">
+            <span class="memo-author">🙍 ${memo.author} · ${memo.time}</span>
+            <button class="memo-delete" onclick="deleteMemo('${memo.id}')">삭제</button>
+          </div>
+        </div>
+      `).join('') : '<div style="color:var(--text3);font-size:.85rem;padding:4px;">메모가 없습니다</div>'}
+    </div>
+    <div class="memo-form">
+      <textarea class="memo-input" id="memo-text" placeholder="메모를 입력하세요..."></textarea>
+      <div class="memo-form-footer">
+        <input class="author-input" id="memo-author" placeholder="작성자 이름" />
+        <button class="memo-submit" onclick="addMemo()">메모 저장</button>
+      </div>
+    </div>
+  `;
+}
+
+function escapeHtml(t) {
+  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+}
+
+// ── CRUD ──
+function openAddModal() {
+  editingId = null;
+  document.getElementById('modal-title-text').textContent = '회원 추가';
+  ['f-name','f-phone','f-email','f-address','f-birth'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('f-grade').value = 'new';
+  openModal('member-modal');
+}
+
+function openEditModal(id) {
+  editingId = id;
+  const m = members.find(x => x.id === id);
+  document.getElementById('modal-title-text').textContent = '회원 편집';
+  document.getElementById('f-name').value = m.name;
+  document.getElementById('f-phone').value = m.phone;
+  document.getElementById('f-email').value = m.email || '';
+  document.getElementById('f-address').value = m.address || '';
+  document.getElementById('f-birth').value = m.birth || '';
+  document.getElementById('f-grade').value = m.grade;
+  openModal('member-modal');
+}
+
+function saveMember() {
+  const name = document.getElementById('f-name').value.trim();
+  const phone = document.getElementById('f-phone').value.trim();
+  if (!name || !phone) { toast('이름과 연락처는 필수입니다', 'error'); return; }
+
+  if (editingId) {
+    const m = members.find(x => x.id === editingId);
+    Object.assign(m, { name, phone, email: document.getElementById('f-email').value.trim(),
+      address: document.getElementById('f-address').value.trim(),
+      birth: document.getElementById('f-birth').value,
+      grade: document.getElementById('f-grade').value });
+  } else {
+    members.unshift({ id: uid(), name, phone,
+      email: document.getElementById('f-email').value.trim(),
+      address: document.getElementById('f-address').value.trim(),
+      birth: document.getElementById('f-birth').value,
+      grade: document.getElementById('f-grade').value,
+      orders: [], memos: [], createdAt: new Date().toISOString().slice(0,10) });
+    selectedId = members[0].id;
+  }
+  save(); renderList(); renderDetail();
+  closeModal('member-modal');
+  toast(editingId ? '회원 정보가 수정되었습니다' : '회원이 추가되었습니다', 'success');
+}
+
+function deleteMember(id) {
+  if (!confirm('정말 삭제하시겠습니까?')) return;
+  members = members.filter(x => x.id !== id);
+  if (selectedId === id) selectedId = null;
+  save(); renderList(); renderDetail();
+  toast('회원이 삭제되었습니다', 'success');
+}
+
+// ── Orders ──
+function openOrderModal() {
+  ['o-name','o-note'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('o-price').value = '';
+  document.getElementById('o-qty').value = '1';
+  document.getElementById('o-date').value = new Date().toISOString().slice(0,10);
+  openModal('order-modal');
+}
+
+function saveOrder() {
+  const name = document.getElementById('o-name').value.trim();
+  const price = parseInt(document.getElementById('o-price').value) || 0;
+  if (!name) { toast('상품명을 입력하세요', 'error'); return; }
+  const m = members.find(x => x.id === selectedId);
+  m.orders.unshift({ id: uid(), name, price, qty: parseInt(document.getElementById('o-qty').value)||1,
+    date: document.getElementById('o-date').value, note: document.getElementById('o-note').value.trim() });
+  save(); renderDetail();
+  closeModal('order-modal');
+  toast('주문이 추가되었습니다', 'success');
+}
+
+function deleteOrder(oid) {
+  const m = members.find(x => x.id === selectedId);
+  m.orders = m.orders.filter(o => o.id !== oid);
+  save(); renderDetail();
+}
+
+// ── Memos ──
+function addMemo() {
+  const text = document.getElementById('memo-text').value.trim();
+  const author = document.getElementById('memo-author').value.trim() || '익명';
+  if (!text) { toast('메모를 입력하세요', 'error'); return; }
+  const m = members.find(x => x.id === selectedId);
+  const now = new Date();
+  m.memos.unshift({ id: uid(), text, author,
+    time: `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}` });
+  save(); renderDetail();
+  toast('메모가 저장되었습니다', 'success');
+}
+
+function deleteMemo(mid) {
+  const m = members.find(x => x.id === selectedId);
+  m.memos = m.memos.filter(x => x.id !== mid);
+  save(); renderDetail();
+}
+
+// ── Modal helpers ──
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(el => {
+  el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
+});
+
+// ── Filter ──
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderList();
+}
+
+// ── Toast ──
+function toast(msg, type = 'success') {
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 2500);
+}
+
+// ── Init ──
+load();
+renderList();
+</script>
+</body>
+</html>
