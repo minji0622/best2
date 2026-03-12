@@ -4,332 +4,164 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>회원 관리 시스템</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
       --bg: #f4f6f9;
-      --surface: #ffffff;
+      --surface: #fff;
       --surface2: #f0f2f5;
       --border: #dde1e9;
       --border2: #c8cdd8;
       --accent: #4f6ef7;
       --accent-light: #eef1fe;
-      --green: #16a34a;
-      --green-light: #dcfce7;
-      --yellow: #b45309;
-      --yellow-light: #fef3c7;
-      --blue-light: #dbeafe;
-      --blue: #1d4ed8;
+      --green: #16a34a; --green-light: #dcfce7;
+      --blue: #1d4ed8;  --blue-light: #dbeafe;
       --gray-light: #f1f3f6;
-      --text: #1a1d27;
-      --text2: #5a6070;
-      --text3: #9aa0b0;
-      --red: #dc2626;
-      --red-light: #fee2e2;
+      --text: #1a1d27; --text2: #5a6070; --text3: #9aa0b0;
+      --red: #dc2626;  --red-light: #fee2e2;
+      --yellow: #b45309; --yellow-light: #fef3c7;
       --radius: 10px;
       --shadow: 0 1px 4px rgba(0,0,0,.07);
-      --shadow-md: 0 4px 16px rgba(0,0,0,.1);
+      --shadow-md: 0 4px 20px rgba(0,0,0,.11);
     }
-
-    body {
-      font-family: 'Noto Sans KR', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
+    body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
 
     /* ── Header ── */
     header {
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      padding: 0 2rem;
-      height: 58px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      box-shadow: var(--shadow);
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      padding: 0 1.6rem; height: 56px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100; box-shadow: var(--shadow);
     }
-    .logo {
-      font-weight: 700;
-      font-size: 1rem;
-      color: var(--accent);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .header-right { display: flex; align-items: center; gap: 1rem; }
-    #member-count {
-      font-size: 0.8rem;
-      color: var(--text2);
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      padding: 4px 12px;
-      border-radius: 20px;
-    }
+    .logo { font-weight: 700; font-size: .98rem; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+    .header-right { display: flex; align-items: center; gap: 8px; }
+    .chip { font-size: .78rem; color: var(--text2); background: var(--surface2); border: 1px solid var(--border); padding: 4px 12px; border-radius: 20px; white-space: nowrap; }
+
+    /* ── Buttons ── */
+    .btn { border: none; border-radius: var(--radius); padding: 8px 14px; font-family: inherit; font-size: .82rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; transition: opacity .15s, background .15s; white-space: nowrap; }
+    .btn-accent { background: var(--accent); color: #fff; box-shadow: 0 2px 8px rgba(79,110,247,.25); }
+    .btn-accent:hover { opacity: .88; }
+    .btn-outline { background: var(--surface); border: 1px solid var(--border); color: var(--text2); box-shadow: var(--shadow); }
+    .btn-outline:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+    .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text3); }
+    .btn-ghost:hover { color: var(--red); border-color: var(--red); background: var(--red-light); }
 
     /* ── Layout ── */
-    .app { display: flex; flex: 1; overflow: hidden; height: calc(100vh - 58px); }
+    .app { display: flex; flex: 1; overflow: hidden; height: calc(100vh - 56px); }
 
     /* ── Sidebar ── */
-    .sidebar {
-      width: 300px;
-      min-width: 300px;
-      background: var(--surface);
-      border-right: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-    .sidebar-top {
-      padding: 14px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .btn-primary {
-      background: var(--accent);
-      color: #fff;
-      border: none;
-      border-radius: var(--radius);
-      padding: 10px 16px;
-      font-family: inherit;
-      font-size: 0.875rem;
-      font-weight: 600;
-      cursor: pointer;
-      width: 100%;
-      transition: opacity .15s;
-      box-shadow: 0 2px 6px rgba(79,110,247,.3);
-    }
-    .btn-primary:hover { opacity: .88; }
+    .sidebar { width: 288px; min-width: 288px; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
+    .sidebar-top { padding: 12px; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px; }
 
-    .search-box { position: relative; }
-    .search-box input {
-      width: 100%;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 8px 12px 8px 34px;
-      font-family: inherit;
-      font-size: 0.84rem;
-      color: var(--text);
-      outline: none;
-      transition: border-color .2s;
-    }
-    .search-box input:focus { border-color: var(--accent); }
-    .search-box input::placeholder { color: var(--text3); }
-    .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text3); }
+    .search-wrap { position: relative; }
+    .search-wrap input { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 8px 12px 8px 32px; font-family: inherit; font-size: .83rem; color: var(--text); outline: none; transition: border-color .2s; }
+    .search-wrap input:focus { border-color: var(--accent); }
+    .search-wrap input::placeholder { color: var(--text3); }
+    .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text3); font-size: .82rem; pointer-events: none; }
 
-    .filter-row { display: flex; gap: 6px; }
-    .filter-btn {
-      flex: 1;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      color: var(--text2);
-      border-radius: 6px;
-      padding: 6px 4px;
-      font-family: inherit;
-      font-size: 0.73rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all .15s;
-    }
-    .filter-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .filter-row { display: flex; gap: 5px; }
+    .f-btn { flex: 1; background: var(--surface2); border: 1px solid var(--border); color: var(--text2); border-radius: 6px; padding: 5px 2px; font-family: inherit; font-size: .71rem; font-weight: 500; cursor: pointer; transition: all .15s; }
+    .f-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
 
     .member-list { flex: 1; overflow-y: auto; padding: 8px; }
-    .member-list::-webkit-scrollbar { width: 4px; }
-    .member-list::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+    .member-list::-webkit-scrollbar { width: 3px; }
+    .member-list::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
 
-    .member-card {
-      border-radius: var(--radius);
-      padding: 12px 14px;
-      cursor: pointer;
-      border: 1px solid transparent;
-      transition: all .15s;
-      margin-bottom: 4px;
-    }
-    .member-card:hover { background: var(--surface2); border-color: var(--border); }
-    .member-card.active { background: var(--accent-light); border-color: var(--accent); }
-    .member-card-name {
-      font-weight: 600;
-      font-size: 0.9rem;
-      margin-bottom: 4px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .member-card-sub { font-size: 0.78rem; color: var(--text2); }
+    .m-card { border-radius: var(--radius); padding: 11px 13px; cursor: pointer; border: 1px solid transparent; transition: all .13s; margin-bottom: 3px; }
+    .m-card:hover { background: var(--surface2); border-color: var(--border); }
+    .m-card.active { background: var(--accent-light); border-color: var(--accent); }
+    .m-card-top { font-weight: 600; font-size: .88rem; display: flex; align-items: center; justify-content: space-between; margin-bottom: 3px; }
+    .m-card-sub { font-size: .75rem; color: var(--text2); }
 
-    .badge { font-size: 0.65rem; padding: 2px 8px; border-radius: 20px; font-weight: 600; }
-    .badge-webcash { background: var(--blue-light); color: var(--blue); }
-    .badge-selfmall { background: var(--green-light); color: var(--green); }
-    .badge-etc { background: var(--gray-light); color: var(--text2); border: 1px solid var(--border); }
+    .badge { font-size: .62rem; padding: 2px 7px; border-radius: 20px; font-weight: 700; letter-spacing: .01em; }
+    .b-webcash  { background: var(--blue-light);   color: var(--blue); }
+    .b-selfmall { background: var(--green-light);  color: var(--green); }
+    .b-etc      { background: var(--gray-light);   color: var(--text2); border: 1px solid var(--border); }
 
-    .empty-state { text-align: center; color: var(--text3); padding: 3rem 1rem; font-size: 0.85rem; line-height: 1.8; }
+    .empty-msg { text-align: center; color: var(--text3); padding: 2.5rem 1rem; font-size: .83rem; line-height: 2; }
 
     /* ── Detail ── */
-    .detail { flex: 1; overflow-y: auto; padding: 1.8rem 2rem; display: flex; flex-direction: column; gap: 1.4rem; }
-    .detail::-webkit-scrollbar { width: 4px; }
-    .detail::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+    .detail { flex: 1; overflow-y: auto; padding: 1.6rem 1.8rem; display: flex; flex-direction: column; gap: 1.2rem; }
+    .detail::-webkit-scrollbar { width: 3px; }
+    .detail::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
 
-    .no-selection { flex: 1; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 1rem; color: var(--text3); }
-    .no-selection-icon { font-size: 4rem; opacity: .3; }
+    .placeholder { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; color: var(--text3); }
+    .placeholder-icon { font-size: 3.5rem; opacity: .25; }
+    .placeholder-text { font-size: .88rem; line-height: 2; text-align: center; }
 
-    .detail-header {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1.4rem 1.6rem;
-      box-shadow: var(--shadow);
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 1rem;
-    }
-    .detail-name { font-size: 1.6rem; font-weight: 700; letter-spacing: -0.03em; display: flex; align-items: center; gap: 10px; }
-    .detail-sub { font-size: 0.85rem; color: var(--text2); margin-top: 6px; }
-    .detail-actions { display: flex; gap: 8px; flex-shrink: 0; }
+    /* Detail sections */
+    .d-header { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.3rem 1.5rem; box-shadow: var(--shadow); display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+    .d-name { font-size: 1.5rem; font-weight: 700; letter-spacing: -.03em; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .d-sub { font-size: .83rem; color: var(--text2); margin-top: 5px; }
 
-    .btn-icon {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      color: var(--text2);
-      border-radius: var(--radius);
-      padding: 8px 14px;
-      font-family: inherit;
-      font-size: 0.8rem;
-      cursor: pointer;
-      display: flex; align-items: center; gap: 5px;
-      transition: all .15s;
-      box-shadow: var(--shadow);
-    }
-    .btn-icon:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
-    .btn-danger:hover { border-color: var(--red); color: var(--red); background: var(--red-light); }
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .i-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 13px 15px; box-shadow: var(--shadow); }
+    .i-card.full { grid-column: 1 / -1; }
+    .i-label { font-size: .67rem; color: var(--text3); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 5px; font-weight: 700; }
+    .i-value { font-size: .9rem; color: var(--text); font-weight: 500; line-height: 1.5; word-break: break-all; }
 
-    .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-    .info-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; box-shadow: var(--shadow); }
-    .info-card.full { grid-column: 1 / -1; }
-    .info-label { font-size: 0.7rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; font-weight: 600; }
-    .info-value { font-size: 0.92rem; color: var(--text); font-weight: 500; line-height: 1.5; }
+    .sec-title { font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--text2); display: flex; align-items: center; gap: 8px; }
+    .sec-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
-    .section-title {
-      font-size: 0.75rem; font-weight: 700; letter-spacing: 0.06em;
-      text-transform: uppercase; color: var(--text2);
-      display: flex; align-items: center; gap: 8px;
-    }
-    .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-
-    /* Ribbons */
-    .ribbon-list { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
-    .ribbon-tag {
-      background: var(--yellow-light);
-      color: var(--yellow);
-      border: 1px solid #fcd34d;
-      border-radius: 20px;
-      padding: 5px 12px;
-      font-size: 0.8rem;
-      font-weight: 500;
-      display: flex; align-items: center; gap: 6px;
-    }
-    .ribbon-del { background: none; border: none; cursor: pointer; color: var(--yellow); font-size: 0.75rem; padding: 0; opacity: .6; transition: opacity .15s; }
-    .ribbon-del:hover { opacity: 1; }
-    .ribbon-add-form { display: flex; gap: 8px; }
-    .ribbon-input {
-      flex: 1; background: var(--surface2); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 8px 12px;
-      font-family: inherit; font-size: 0.84rem; color: var(--text); outline: none;
-      transition: border-color .2s;
-    }
-    .ribbon-input:focus { border-color: var(--accent); }
-    .ribbon-input::placeholder { color: var(--text3); }
-    .ribbon-add-btn {
-      background: var(--yellow-light); border: 1px solid #fcd34d;
-      color: var(--yellow); border-radius: var(--radius);
-      padding: 8px 14px; font-family: inherit; font-size: 0.82rem;
-      font-weight: 600; cursor: pointer; transition: opacity .15s; white-space: nowrap;
-    }
-    .ribbon-add-btn:hover { opacity: .8; }
-
-    /* Orders */
-    .order-list { display: flex; flex-direction: column; gap: 8px; }
-    .order-item {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 12px 16px;
-      display: flex; justify-content: space-between; align-items: center;
-      box-shadow: var(--shadow);
-    }
-    .order-number { font-family: 'DM Mono', monospace; font-size: 0.95rem; font-weight: 500; letter-spacing: .04em; }
-    .order-meta { font-size: 0.76rem; color: var(--text2); margin-top: 3px; }
-    .order-del { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 0.78rem; padding: 4px 8px; border-radius: 4px; transition: all .15s; }
-    .order-del:hover { color: var(--red); background: var(--red-light); }
-
-    .add-btn-dashed {
-      background: transparent; border: 1.5px dashed var(--border2);
-      color: var(--text3); border-radius: var(--radius);
-      padding: 10px; font-family: inherit; font-size: 0.82rem;
-      cursor: pointer; width: 100%; transition: all .15s;
-    }
-    .add-btn-dashed:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
-
-    /* Memo log */
-    .memo-list { display: flex; flex-direction: column; gap: 8px; }
-    .memo-item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; box-shadow: var(--shadow); }
-    .memo-text { font-size: 0.88rem; line-height: 1.7; margin-bottom: 8px; }
-    .memo-footer { display: flex; justify-content: space-between; align-items: center; }
-    .memo-author { font-size: 0.74rem; color: var(--text3); }
-    .memo-del { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 0.74rem; padding: 2px 6px; border-radius: 4px; transition: all .15s; }
+    /* Memo */
+    .memo-list { display: flex; flex-direction: column; gap: 7px; }
+    .memo-item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 11px 13px; box-shadow: var(--shadow); }
+    .memo-body { font-size: .87rem; line-height: 1.7; margin-bottom: 7px; white-space: pre-wrap; }
+    .memo-foot { display: flex; justify-content: space-between; align-items: center; }
+    .memo-meta { font-size: .72rem; color: var(--text3); }
+    .memo-del { background: none; border: none; color: var(--text3); cursor: pointer; font-size: .72rem; padding: 2px 7px; border-radius: 4px; transition: all .13s; }
     .memo-del:hover { color: var(--red); background: var(--red-light); }
 
     .memo-form { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
-    .memo-input { width: 100%; background: transparent; border: none; padding: 12px 14px; font-family: inherit; font-size: 0.88rem; color: var(--text); resize: none; outline: none; min-height: 80px; }
-    .memo-input::placeholder { color: var(--text3); }
-    .memo-form-footer { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-top: 1px solid var(--border); background: var(--surface2); }
-    .author-input { background: transparent; border: none; color: var(--text2); font-family: inherit; font-size: 0.8rem; outline: none; width: 140px; }
-    .author-input::placeholder { color: var(--text3); }
-    .memo-submit { background: var(--accent); color: #fff; border: none; border-radius: 6px; padding: 6px 14px; font-family: inherit; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: opacity .15s; }
-    .memo-submit:hover { opacity: .85; }
+    .memo-ta { width: 100%; background: transparent; border: none; padding: 11px 13px; font-family: inherit; font-size: .87rem; color: var(--text); resize: none; outline: none; min-height: 74px; }
+    .memo-ta::placeholder { color: var(--text3); }
+    .memo-form-foot { display: flex; justify-content: space-between; align-items: center; padding: 7px 11px; border-top: 1px solid var(--border); background: var(--surface2); }
+    .author-inp { background: transparent; border: none; color: var(--text2); font-family: inherit; font-size: .79rem; outline: none; width: 150px; }
+    .author-inp::placeholder { color: var(--text3); }
+    .memo-save-btn { background: var(--accent); color: #fff; border: none; border-radius: 6px; padding: 6px 14px; font-family: inherit; font-size: .79rem; font-weight: 600; cursor: pointer; }
+    .memo-save-btn:hover { opacity: .85; }
 
-    /* Modal */
-    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.3); backdrop-filter: blur(3px); z-index: 200; align-items: center; justify-content: center; }
+    /* ── Upload Modal ── */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.28); backdrop-filter: blur(4px); z-index: 200; align-items: center; justify-content: center; }
     .modal-overlay.open { display: flex; }
-    .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 2rem; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-md); animation: slideUp .22s ease; }
-    @keyframes slideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
-    .modal-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 1.4rem; display: flex; align-items: center; justify-content: space-between; }
-    .modal-close { background: var(--surface2); border: 1px solid var(--border); color: var(--text2); border-radius: 6px; width: 28px; height: 28px; cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; transition: all .15s; }
+    .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.8rem; width: 100%; max-width: 580px; max-height: 92vh; overflow-y: auto; box-shadow: var(--shadow-md); animation: popUp .2s ease; }
+    @keyframes popUp { from { opacity: 0; transform: translateY(14px) scale(.98); } to { opacity: 1; transform: none; } }
+    .modal-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 1.2rem; display: flex; align-items: center; justify-content: space-between; }
+    .modal-close { background: var(--surface2); border: 1px solid var(--border); color: var(--text2); border-radius: 6px; width: 28px; height: 28px; cursor: pointer; font-size: .88rem; display: flex; align-items: center; justify-content: center; transition: all .13s; }
     .modal-close:hover { background: var(--red-light); color: var(--red); }
 
-    .form-group { margin-bottom: 14px; }
-    .form-label { display: block; font-size: 0.78rem; color: var(--text2); margin-bottom: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
-    .form-input, .form-select, .form-textarea {
-      width: 100%; background: var(--surface2); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 10px 12px;
-      font-family: inherit; font-size: 0.88rem; color: var(--text);
-      outline: none; transition: border-color .2s, box-shadow .2s;
-    }
-    .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(79,110,247,.1); }
-    .form-input::placeholder, .form-textarea::placeholder { color: var(--text3); }
-    .form-textarea { resize: vertical; min-height: 70px; }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .form-hint { font-size: 0.74rem; color: var(--text3); margin-top: 4px; }
+    /* Drop zone */
+    .drop-zone { border: 2px dashed var(--border2); border-radius: 12px; padding: 2rem 1.5rem; text-align: center; cursor: pointer; transition: all .2s; background: var(--surface); }
+    .drop-zone:hover, .drop-zone.over { border-color: var(--accent); background: var(--accent-light); }
+    .drop-icon { font-size: 2.4rem; margin-bottom: 8px; }
+    .drop-text { font-size: .88rem; color: var(--text2); line-height: 1.8; }
+    .drop-sub  { font-size: .76rem; color: var(--text3); margin-top: 4px; }
 
-    .modal-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 1.4rem; }
-    .btn-secondary { background: var(--surface2); border: 1px solid var(--border); color: var(--text2); border-radius: var(--radius); padding: 10px 20px; font-family: inherit; font-size: 0.88rem; cursor: pointer; transition: all .15s; }
-    .btn-secondary:hover { border-color: var(--text2); }
-    .btn-submit { background: var(--accent); border: none; color: #fff; border-radius: var(--radius); padding: 10px 24px; font-family: inherit; font-size: 0.88rem; font-weight: 600; cursor: pointer; transition: opacity .15s; box-shadow: 0 2px 6px rgba(79,110,247,.3); }
-    .btn-submit:hover { opacity: .87; }
+    /* Preview table */
+    .preview-wrap { margin-top: 14px; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+    .preview-info { font-size: .79rem; color: var(--text2); padding: 8px 12px; background: var(--surface2); border-bottom: 1px solid var(--border); }
+    .tbl-scroll { max-height: 240px; overflow-y: auto; }
+    .tbl-scroll::-webkit-scrollbar { width: 3px; }
+    .tbl-scroll::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+    table { width: 100%; border-collapse: collapse; font-size: .79rem; }
+    thead th { background: var(--accent); color: #fff; padding: 8px 10px; text-align: left; font-weight: 600; white-space: nowrap; position: sticky; top: 0; }
+    tbody td { padding: 7px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:nth-child(even) td { background: var(--surface2); }
+
+    .modal-foot { display: flex; gap: 8px; justify-content: flex-end; margin-top: 1.3rem; }
+    .btn-cancel { background: var(--surface2); border: 1px solid var(--border); color: var(--text2); border-radius: var(--radius); padding: 9px 18px; font-family: inherit; font-size: .86rem; cursor: pointer; }
+    .btn-confirm { background: var(--accent); border: none; color: #fff; border-radius: var(--radius); padding: 9px 22px; font-family: inherit; font-size: .86rem; font-weight: 700; cursor: pointer; box-shadow: 0 2px 8px rgba(79,110,247,.25); }
+    .btn-confirm:disabled { opacity: .4; cursor: not-allowed; }
+    .btn-confirm:not(:disabled):hover { opacity: .87; }
 
     /* Toast */
-    .toast { position: fixed; bottom: 2rem; right: 2rem; border-radius: var(--radius); padding: 12px 20px; font-size: 0.84rem; z-index: 999; animation: slideUp .25s ease; box-shadow: var(--shadow-md); }
-    .toast.success { background: var(--green-light); border: 1px solid #86efac; color: var(--green); }
-    .toast.error { background: var(--red-light); border: 1px solid #fca5a5; color: var(--red); }
+    .toast { position: fixed; bottom: 1.8rem; right: 1.8rem; border-radius: var(--radius); padding: 10px 18px; font-size: .82rem; z-index: 999; box-shadow: var(--shadow-md); animation: popUp .22s ease; }
+    .toast.ok   { background: var(--green-light); border: 1px solid #86efac; color: var(--green); }
+    .toast.err  { background: var(--red-light);   border: 1px solid #fca5a5; color: var(--red); }
+    .toast.info { background: var(--accent-light); border: 1px solid #a5b4fc; color: var(--accent); }
   </style>
 </head>
 <body>
@@ -337,357 +169,352 @@
 <header>
   <div class="logo">👥 회원 관리 시스템</div>
   <div class="header-right">
-    <span id="member-count">0명의 회원</span>
-    <button class="btn-primary" style="width:auto;padding:8px 18px;" onclick="openAddModal()">+ 회원 추가</button>
+    <span class="chip" id="count-chip">회원 0명</span>
+    <button class="btn btn-outline" onclick="dlTemplate()">⬇️ 템플릿 다운</button>
+    <button class="btn btn-accent" onclick="openUpload()">📂 엑셀 업로드</button>
   </div>
 </header>
 
 <div class="app">
+  <!-- 사이드바 -->
   <div class="sidebar">
     <div class="sidebar-top">
-      <div class="search-box">
+      <div class="search-wrap">
         <span class="search-icon">🔍</span>
-        <input type="text" id="search-input" placeholder="이름, 연락처로 검색..." oninput="renderList()" />
+        <input type="text" id="q" placeholder="이름, 연락처로 검색..." oninput="renderList()" />
       </div>
       <div class="filter-row">
-        <button class="filter-btn active" onclick="setFilter('all',this)">전체</button>
-        <button class="filter-btn" onclick="setFilter('webcash',this)">웹케시</button>
-        <button class="filter-btn" onclick="setFilter('selfmall',this)">자사몰</button>
-        <button class="filter-btn" onclick="setFilter('etc',this)">기타</button>
+        <button class="f-btn active" onclick="setFilter('all',this)">전체</button>
+        <button class="f-btn" onclick="setFilter('webcash',this)">웹케시</button>
+        <button class="f-btn" onclick="setFilter('selfmall',this)">자사몰</button>
+        <button class="f-btn" onclick="setFilter('etc',this)">기타</button>
       </div>
     </div>
-    <div class="member-list" id="member-list"></div>
+    <div class="member-list" id="list"></div>
   </div>
 
-  <div class="detail" id="detail-panel">
-    <div class="no-selection">
-      <div class="no-selection-icon">👥</div>
-      <div>왼쪽에서 회원을 선택하거나<br/>새 회원을 추가하세요</div>
-    </div>
-  </div>
-</div>
-
-<!-- 회원 추가/편집 모달 -->
-<div class="modal-overlay" id="member-modal">
-  <div class="modal">
-    <div class="modal-title">
-      <span id="modal-title-text">회원 추가</span>
-      <button class="modal-close" onclick="closeModal('member-modal')">✕</button>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">이름 *</label>
-        <input class="form-input" id="f-name" placeholder="홍길동" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">연락처 *</label>
-        <input class="form-input" id="f-phone" placeholder="010-0000-0000" />
-      </div>
-    </div>
-    <div class="form-group">
-      <label class="form-label">회원구분 *</label>
-      <select class="form-select" id="f-type">
-        <option value="webcash">웹케시</option>
-        <option value="selfmall">자사몰</option>
-        <option value="etc">기타</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label class="form-label">보내는사람 이름</label>
-      <input class="form-input" id="f-sender" placeholder="보내는사람 이름" />
-    </div>
-    <div class="form-group">
-      <label class="form-label">집주소</label>
-      <input class="form-input" id="f-address" placeholder="주소를 한 줄로 입력하세요" />
-    </div>
-    <div class="form-group">
-      <label class="form-label">메모</label>
-      <textarea class="form-textarea" id="f-memo" placeholder="회원 관련 메모"></textarea>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-secondary" onclick="closeModal('member-modal')">취소</button>
-      <button class="btn-submit" onclick="saveMember()">저장</button>
+  <!-- 상세 -->
+  <div class="detail" id="detail">
+    <div class="placeholder">
+      <div class="placeholder-icon">📊</div>
+      <div class="placeholder-text">엑셀 파일을 업로드하면<br/>회원 목록이 표시됩니다</div>
+      <button class="btn btn-accent" onclick="openUpload()">📂 엑셀 업로드</button>
     </div>
   </div>
 </div>
 
-<!-- 주문번호 추가 모달 -->
-<div class="modal-overlay" id="order-modal">
+<!-- 업로드 모달 -->
+<div class="modal-overlay" id="upload-modal">
   <div class="modal">
     <div class="modal-title">
-      <span>주문번호 추가</span>
-      <button class="modal-close" onclick="closeModal('order-modal')">✕</button>
+      <span>📂 엑셀 업로드</span>
+      <button class="modal-close" onclick="closeUpload()">✕</button>
     </div>
-    <div class="form-group">
-      <label class="form-label">주문번호 *</label>
-      <input class="form-input" id="o-number" placeholder="주문번호 (최대 20자리 숫자)" maxlength="20"
-        style="font-family:'DM Mono',monospace;font-size:1rem;letter-spacing:.05em;"
-        oninput="this.value=this.value.replace(/[^0-9]/g,'')" />
-      <div class="form-hint">숫자만 입력 가능 · 최대 20자리</div>
+
+    <div class="drop-zone" id="drop-zone"
+      ondragover="event.preventDefault();this.classList.add('over')"
+      ondragleave="this.classList.remove('over')"
+      ondrop="onDrop(event)"
+      onclick="document.getElementById('file-inp').click()">
+      <div class="drop-icon">📊</div>
+      <div class="drop-text">엑셀 파일을 드래그하거나 클릭해서 선택</div>
+      <div class="drop-sub">.xlsx / .xls 지원 &nbsp;·&nbsp; 1행: 이름 / 연락처 / 회원구분 / 보내는사람 / 집주소 / 메모</div>
     </div>
-    <div class="form-group">
-      <label class="form-label">주문일</label>
-      <input class="form-input" id="o-date" type="date" />
+    <input type="file" id="file-inp" accept=".xlsx,.xls" style="display:none" onchange="onFileSelect(event)" />
+
+    <div id="preview" style="display:none;">
+      <div class="preview-wrap">
+        <div class="preview-info" id="preview-info"></div>
+        <div class="tbl-scroll">
+          <table><thead id="t-head"></thead><tbody id="t-body"></tbody></table>
+        </div>
+      </div>
     </div>
-    <div class="form-group">
-      <label class="form-label">비고</label>
-      <input class="form-input" id="o-note" placeholder="추가 메모 (선택)" />
-    </div>
-    <div class="modal-footer">
-      <button class="btn-secondary" onclick="closeModal('order-modal')">취소</button>
-      <button class="btn-submit" onclick="saveOrder()">저장</button>
+
+    <div class="modal-foot">
+      <button class="btn-cancel" onclick="closeUpload()">취소</button>
+      <button class="btn-confirm" id="confirm-btn" disabled onclick="applyUpload()">✅ 목록 적용</button>
     </div>
   </div>
 </div>
 
 <script>
-let members = [], selectedId = null, editingId = null, currentFilter = 'all';
-const KEY = 'members_v2';
+// ─── 상태 ───
+let members  = [];   // 엑셀에서 불러온 회원 기본 정보
+let memoMap  = {};   // { phone: [ {id,text,author,time}, … ] }  ← localStorage 저장
+let sel      = null; // 선택된 회원 phone
+let filter   = 'all';
+let pending  = [];   // 업로드 미리보기 데이터
 
-function load() {
-  try { const r = localStorage.getItem(KEY); members = r ? JSON.parse(r) : sample(); }
-  catch { members = sample(); }
-  save();
+const MEMO_KEY = 'memoMap_v1';
+
+// ─── 초기화 ───
+function init() {
+  try { memoMap = JSON.parse(localStorage.getItem(MEMO_KEY)) || {}; } catch { memoMap = {}; }
 }
-function save() { localStorage.setItem(KEY, JSON.stringify(members)); }
-function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function saveMemos() { localStorage.setItem(MEMO_KEY, JSON.stringify(memoMap)); }
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
 
-function sample() {
-  return [
-    { id:uid(), name:'김민준', phone:'010-1234-5678', type:'webcash', sender:'김민준',
-      address:'서울시 강남구 테헤란로 123 역삼동 현대빌딩 301호',
-      memo:'정기 구매 고객. 매월 1일 발주.',
-      ribbons:['생일 축하합니다 🎂','항상 감사합니다 💐'],
-      orders:[{id:uid(),number:'20241101123456789',date:'2024-11-01',note:'정기주문'},{id:uid(),number:'20241215987654321',date:'2024-12-15',note:''}],
-      memoLog:[{id:uid(),text:'12월 특별 사은품 발송 완료.',author:'김직원',time:'2024-12-16 10:30'}],
-      createdAt:'2024-01-10' },
-    { id:uid(), name:'이서연', phone:'010-9876-5432', type:'selfmall', sender:'이서연',
-      address:'서울시 서초구 방배동 45-6 현대아파트 101동 502호',
-      memo:'',
-      ribbons:['고맙습니다 🌸'],
-      orders:[{id:uid(),number:'20250105555666777',date:'2025-01-05',note:''}],
-      memoLog:[],
-      createdAt:'2024-06-20' },
-    { id:uid(), name:'박지호', phone:'010-5555-7777', type:'etc', sender:'박지호',
-      address:'경기도 성남시 분당구 정자동 불정로 10',
-      memo:'첫 방문 고객. 추가 상담 예정.',
-      ribbons:[],
-      orders:[],
-      memoLog:[{id:uid(),text:'제품 상담 진행. 다음 주 재방문 예정.',author:'박직원',time:'2025-03-10 11:00'}],
-      createdAt:'2025-03-10' }
-  ];
+// ─── 공통 유틸 ───
+const TYPE_KO  = { webcash:'웹케시', selfmall:'자사몰', etc:'기타' };
+const TYPE_MAP = { '웹케시':'webcash','webcash':'webcash','자사몰':'selfmall','selfmall':'selfmall','기타':'etc','etc':'etc' };
+const BADGE    = { webcash:'b-webcash', selfmall:'b-selfmall', etc:'b-etc' };
+const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+// ─── 엑셀 파싱 ───
+function parseRow(row) {
+  const s = k => String(row[k]||'').trim();
+  return {
+    name    : s('이름'),
+    phone   : s('연락처'),
+    type    : TYPE_MAP[s('회원구분')] || 'etc',
+    sender  : s('보내는사람'),
+    address : s('집주소'),
+    memo    : s('메모'),
+  };
 }
 
-const typeLabel = t => ({webcash:'웹케시',selfmall:'자사몰',etc:'기타'}[t]||t);
-const typeBadge = t => ({webcash:'badge-webcash',selfmall:'badge-selfmall',etc:'badge-etc'}[t]||'badge-etc');
-const esc = t => String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+async function readExcel(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = e => {
+      try {
+        const wb = XLSX.read(e.target.result, { type:'binary' });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        res(XLSX.utils.sheet_to_json(ws, { defval:'' }));
+      } catch(e){ rej(e); }
+    };
+    r.onerror = rej;
+    r.readAsBinaryString(file);
+  });
+}
 
+// ─── 업로드 UI ───
+function openUpload() {
+  pending = [];
+  document.getElementById('preview').style.display = 'none';
+  document.getElementById('file-inp').value = '';
+  document.getElementById('confirm-btn').disabled = true;
+  document.getElementById('drop-zone').classList.remove('over');
+  document.getElementById('upload-modal').classList.add('open');
+}
+function closeUpload() { document.getElementById('upload-modal').classList.remove('open'); }
+document.getElementById('upload-modal').addEventListener('click', e => { if (e.target === e.currentTarget) closeUpload(); });
+
+function onDrop(e) {
+  e.preventDefault();
+  document.getElementById('drop-zone').classList.remove('over');
+  const f = e.dataTransfer.files[0];
+  if (f) processFile(f);
+}
+function onFileSelect(e) { if (e.target.files[0]) processFile(e.target.files[0]); }
+
+async function processFile(file) {
+  if (!/\.(xlsx|xls)$/i.test(file.name)) { toast('엑셀 파일만 지원합니다', 'err'); return; }
+  toast('파일 읽는 중…', 'info');
+  try {
+    const raw = await readExcel(file);
+    pending = raw.map(parseRow).filter(r => r.name && r.phone);
+    renderPreview(pending);
+    document.getElementById('confirm-btn').disabled = pending.length === 0;
+  } catch(e) { toast('파일 읽기 실패: ' + e.message, 'err'); }
+}
+
+function renderPreview(rows) {
+  document.getElementById('preview').style.display = 'block';
+  document.getElementById('preview-info').textContent = `총 ${rows.length}명 인식됨 (최대 50행 미리보기)`;
+  document.getElementById('t-head').innerHTML =
+    `<tr>${['이름','연락처','회원구분','보내는사람','집주소'].map(c=>`<th>${c}</th>`).join('')}</tr>`;
+  document.getElementById('t-body').innerHTML = rows.slice(0,50).map(r => `
+    <tr>
+      <td>${esc(r.name)}</td>
+      <td>${esc(r.phone)}</td>
+      <td><span class="badge ${BADGE[r.type]}">${TYPE_KO[r.type]}</span></td>
+      <td>${esc(r.sender)}</td>
+      <td>${esc(r.address)}</td>
+    </tr>`).join('');
+}
+
+function applyUpload() {
+  const existing = new Set(members.map(m => m.phone));
+  const newOnes  = pending.filter(r => !existing.has(r.phone));
+  members = [...members, ...newOnes];
+  if (!sel && members.length) sel = members[0].phone;
+  closeUpload();
+  renderList();
+  renderDetail();
+  const skipped = pending.length - newOnes.length;
+  const msg = skipped > 0
+    ? `${newOnes.length}명 추가 (중복 ${skipped}명 제외)`
+    : `${newOnes.length}명이 추가되었습니다`;
+  toast(msg, 'ok');
+}
+
+// ─── 템플릿 다운 ───
+function dlTemplate() {
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet([
+    ['이름','연락처','회원구분','보내는사람','집주소','메모'],
+    ['홍길동','010-1234-5678','웹케시','홍길동','서울시 강남구 테헤란로 123','단골 고객'],
+    ['김영희','010-9876-5432','자사몰','김영희','경기도 성남시 분당구 정자동 45',''],
+    ['박철수','010-5555-7777','기타','박철수','부산시 해운대구 센텀로 10','신규'],
+  ]);
+  ws['!cols'] = [{wch:12},{wch:18},{wch:10},{wch:14},{wch:36},{wch:24}];
+  XLSX.utils.book_append_sheet(wb, ws, '회원목록');
+
+  const ws2 = XLSX.utils.aoa_to_sheet([
+    ['📋 작성 안내'],[''],
+    ['A열 - 이름 (필수)'],
+    ['B열 - 연락처 (필수) : 010-0000-0000'],
+    ['C열 - 회원구분 : 웹케시 / 자사몰 / 기타'],
+    ['D열 - 보내는사람'],
+    ['E열 - 집주소 (한 줄)'],
+    ['F열 - 메모'],[''],
+    ['⚠ 1행(헤더)은 수정하지 마세요'],
+    ['⚠ 이름과 연락처는 필수 입력입니다'],
+  ]);
+  ws2['!cols'] = [{wch:48}];
+  XLSX.utils.book_append_sheet(wb, ws2, '작성안내');
+  XLSX.writeFile(wb, '회원목록_템플릿.xlsx');
+  toast('템플릿이 다운로드되었습니다', 'ok');
+}
+
+// ─── 목록 렌더링 ───
 function renderList() {
-  const q = document.getElementById('search-input').value.toLowerCase();
-  const el = document.getElementById('member-list');
-  const list = members.filter(m =>
-    (currentFilter==='all' || m.type===currentFilter) &&
+  const q  = document.getElementById('q').value.toLowerCase();
+  const el = document.getElementById('list');
+  const filtered = members.filter(m =>
+    (filter === 'all' || m.type === filter) &&
     (!q || m.name.includes(q) || m.phone.includes(q))
   );
-  document.getElementById('member-count').textContent = `${members.length}명의 회원`;
-  if (!list.length) { el.innerHTML = `<div class="empty-state">검색 결과가 없습니다</div>`; return; }
-  el.innerHTML = list.map(m => `
-    <div class="member-card ${m.id===selectedId?'active':''}" onclick="selectMember('${m.id}')">
-      <div class="member-card-name">${m.name} <span class="badge ${typeBadge(m.type)}">${typeLabel(m.type)}</span></div>
-      <div class="member-card-sub">${m.phone}</div>
-    </div>
-  `).join('');
+  document.getElementById('count-chip').textContent = `회원 ${members.length}명`;
+
+  if (!filtered.length) {
+    el.innerHTML = `<div class="empty-msg">${members.length === 0
+      ? '엑셀을 업로드하면<br/>회원 목록이 표시됩니다'
+      : '검색 결과가 없습니다'}</div>`;
+    return;
+  }
+  el.innerHTML = filtered.map(m => `
+    <div class="m-card ${m.phone === sel ? 'active' : ''}" onclick="selectMember('${m.phone}')">
+      <div class="m-card-top">
+        ${esc(m.name)}
+        <span class="badge ${BADGE[m.type]}">${TYPE_KO[m.type]}</span>
+      </div>
+      <div class="m-card-sub">${esc(m.phone)}</div>
+    </div>`).join('');
 }
 
-function selectMember(id) { selectedId=id; renderList(); renderDetail(); }
+// ─── 상세 렌더링 ───
+function selectMember(phone) { sel = phone; renderList(); renderDetail(); }
 
 function renderDetail() {
-  const panel = document.getElementById('detail-panel');
-  if (!selectedId) { panel.innerHTML=`<div class="no-selection"><div class="no-selection-icon">👥</div><div>회원을 선택하세요</div></div>`; return; }
-  const m = members.find(x=>x.id===selectedId);
+  const panel = document.getElementById('detail');
+  if (!sel) {
+    panel.innerHTML = `<div class="placeholder"><div class="placeholder-icon">👥</div><div class="placeholder-text">회원을 선택하세요</div></div>`;
+    return;
+  }
+  const m = members.find(x => x.phone === sel);
   if (!m) return;
-  if (!m.memoLog) m.memoLog = [];
-  if (!m.ribbons) m.ribbons = [];
+  const memos = memoMap[m.phone] || [];
 
   panel.innerHTML = `
-    <div class="detail-header">
+    <div class="d-header">
       <div>
-        <div class="detail-name">${m.name} <span class="badge ${typeBadge(m.type)}">${typeLabel(m.type)}</span></div>
-        <div class="detail-sub">📞 ${m.phone} &nbsp;·&nbsp; 가입일 ${m.createdAt}</div>
-      </div>
-      <div class="detail-actions">
-        <button class="btn-icon" onclick="openEditModal('${m.id}')">✏️ 편집</button>
-        <button class="btn-icon btn-danger" onclick="deleteMember('${m.id}')">🗑️ 삭제</button>
+        <div class="d-name">${esc(m.name)} <span class="badge ${BADGE[m.type]}">${TYPE_KO[m.type]}</span></div>
+        <div class="d-sub">📞 ${esc(m.phone)}</div>
       </div>
     </div>
 
     <div class="info-grid">
-      <div class="info-card">
-        <div class="info-label">보내는사람</div>
-        <div class="info-value">${m.sender||'—'}</div>
+      <div class="i-card">
+        <div class="i-label">보내는사람</div>
+        <div class="i-value">${esc(m.sender) || '—'}</div>
       </div>
-      <div class="info-card">
-        <div class="info-label">회원구분</div>
-        <div class="info-value">${typeLabel(m.type)}</div>
+      <div class="i-card">
+        <div class="i-label">회원구분</div>
+        <div class="i-value">${TYPE_KO[m.type]}</div>
       </div>
-      <div class="info-card full">
-        <div class="info-label">집주소</div>
-        <div class="info-value">${m.address||'—'}</div>
+      <div class="i-card full">
+        <div class="i-label">집주소</div>
+        <div class="i-value">${esc(m.address) || '—'}</div>
       </div>
-      ${m.memo ? `<div class="info-card full"><div class="info-label">메모</div><div class="info-value">${esc(m.memo)}</div></div>` : ''}
+      ${m.memo ? `
+      <div class="i-card full">
+        <div class="i-label">엑셀 메모</div>
+        <div class="i-value">${esc(m.memo)}</div>
+      </div>` : ''}
     </div>
 
-    <div class="section-title">🎀 자주 쓰는 리본문구</div>
-    <div>
-      <div class="ribbon-list" id="ribbon-list">
-        ${m.ribbons.length
-          ? m.ribbons.map((r,i)=>`<div class="ribbon-tag">🎀 ${esc(r)} <button class="ribbon-del" onclick="deleteRibbon(${i})">✕</button></div>`).join('')
-          : `<span style="color:var(--text3);font-size:.84rem;">등록된 리본문구가 없습니다</span>`}
-      </div>
-      <div class="ribbon-add-form" style="margin-top:10px;">
-        <input class="ribbon-input" id="ribbon-input" placeholder="새 리본문구 입력..." onkeydown="if(event.key==='Enter')addRibbon()" />
-        <button class="ribbon-add-btn" onclick="addRibbon()">+ 추가</button>
-      </div>
-    </div>
+    <div class="sec-title">📝 메모 기록</div>
 
-    <div class="section-title">📦 주문번호</div>
-    <div class="order-list">
-      ${m.orders.length
-        ? m.orders.map(o=>`
-          <div class="order-item">
-            <div>
-              <div class="order-number">${o.number}</div>
-              <div class="order-meta">${o.date}${o.note?' · '+esc(o.note):''}</div>
-            </div>
-            <button class="order-del" onclick="deleteOrder('${o.id}')">삭제</button>
-          </div>`).join('')
-        : `<div style="color:var(--text3);font-size:.85rem;padding:4px 2px;">주문번호가 없습니다</div>`}
-    </div>
-    <button class="add-btn-dashed" onclick="openOrderModal()">+ 주문번호 추가</button>
-
-    <div class="section-title">📝 메모 기록</div>
     <div class="memo-list">
-      ${m.memoLog.length
-        ? m.memoLog.map(memo=>`
+      ${memos.length
+        ? memos.map(memo => `
           <div class="memo-item">
-            <div class="memo-text">${esc(memo.text)}</div>
-            <div class="memo-footer">
-              <span class="memo-author">✍️ ${memo.author} · ${memo.time}</span>
-              <button class="memo-del" onclick="deleteMemoLog('${memo.id}')">삭제</button>
+            <div class="memo-body">${esc(memo.text)}</div>
+            <div class="memo-foot">
+              <span class="memo-meta">✍️ ${esc(memo.author)} · ${memo.time}</span>
+              <button class="memo-del" onclick="delMemo('${m.phone}','${memo.id}')">삭제</button>
             </div>
           </div>`).join('')
-        : `<div style="color:var(--text3);font-size:.84rem;padding:4px 2px;">메모 기록이 없습니다</div>`}
+        : `<div style="color:var(--text3);font-size:.83rem;padding:4px 2px;">메모가 없습니다</div>`}
     </div>
+
     <div class="memo-form">
-      <textarea class="memo-input" id="memo-text" placeholder="메모를 입력하세요..."></textarea>
-      <div class="memo-form-footer">
-        <input class="author-input" id="memo-author" placeholder="작성자 이름" />
-        <button class="memo-submit" onclick="addMemoLog()">메모 저장</button>
+      <textarea class="memo-ta" id="memo-ta" placeholder="메모를 입력하세요…"></textarea>
+      <div class="memo-form-foot">
+        <input class="author-inp" id="author-inp" placeholder="작성자 이름" />
+        <button class="memo-save-btn" onclick="addMemo('${m.phone}')">저장</button>
       </div>
     </div>
   `;
 }
 
-// ── Member CRUD ──
-function openAddModal() {
-  editingId=null;
-  document.getElementById('modal-title-text').textContent='회원 추가';
-  ['f-name','f-phone','f-sender','f-address','f-memo'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('f-type').value='webcash';
-  openModal('member-modal');
-}
-function openEditModal(id) {
-  editingId=id;
-  const m=members.find(x=>x.id===id);
-  document.getElementById('modal-title-text').textContent='회원 편집';
-  document.getElementById('f-name').value=m.name;
-  document.getElementById('f-phone').value=m.phone;
-  document.getElementById('f-type').value=m.type;
-  document.getElementById('f-sender').value=m.sender||'';
-  document.getElementById('f-address').value=m.address||'';
-  document.getElementById('f-memo').value=m.memo||'';
-  openModal('member-modal');
-}
-function saveMember() {
-  const name=document.getElementById('f-name').value.trim();
-  const phone=document.getElementById('f-phone').value.trim();
-  if(!name||!phone){toast('이름과 연락처는 필수입니다','error');return;}
-  const data={name,phone,type:document.getElementById('f-type').value,
-    sender:document.getElementById('f-sender').value.trim(),
-    address:document.getElementById('f-address').value.trim(),
-    memo:document.getElementById('f-memo').value.trim()};
-  if(editingId){Object.assign(members.find(x=>x.id===editingId),data);}
-  else{members.unshift({id:uid(),...data,ribbons:[],orders:[],memoLog:[],createdAt:new Date().toISOString().slice(0,10)});selectedId=members[0].id;}
-  save();renderList();renderDetail();closeModal('member-modal');
-  toast(editingId?'회원 정보가 수정되었습니다':'회원이 추가되었습니다','success');
-}
-function deleteMember(id) {
-  if(!confirm('정말 삭제하시겠습니까?'))return;
-  members=members.filter(x=>x.id!==id);
-  if(selectedId===id)selectedId=null;
-  save();renderList();renderDetail();toast('회원이 삭제되었습니다','success');
+// ─── 메모 ───
+function addMemo(phone) {
+  const text   = document.getElementById('memo-ta').value.trim();
+  const author = document.getElementById('author-inp').value.trim() || '익명';
+  if (!text) { toast('메모를 입력하세요', 'err'); return; }
+  if (!memoMap[phone]) memoMap[phone] = [];
+  const now = new Date();
+  const p   = n => String(n).padStart(2,'0');
+  memoMap[phone].unshift({
+    id: uid(), text, author,
+    time: `${now.getFullYear()}-${p(now.getMonth()+1)}-${p(now.getDate())} ${p(now.getHours())}:${p(now.getMinutes())}`
+  });
+  saveMemos();
+  renderDetail();
+  toast('메모가 저장되었습니다', 'ok');
 }
 
-// ── Ribbon ──
-function addRibbon() {
-  const el=document.getElementById('ribbon-input');
-  const t=el.value.trim(); if(!t)return;
-  const m=members.find(x=>x.id===selectedId);
-  m.ribbons.push(t); el.value='';
-  save();renderDetail();
-  setTimeout(()=>{const i=document.getElementById('ribbon-input');if(i)i.focus();},50);
-}
-function deleteRibbon(idx) {
-  members.find(x=>x.id===selectedId).ribbons.splice(idx,1);
-  save();renderDetail();
+function delMemo(phone, id) {
+  if (!memoMap[phone]) return;
+  memoMap[phone] = memoMap[phone].filter(m => m.id !== id);
+  saveMemos();
+  renderDetail();
 }
 
-// ── Orders ──
-function openOrderModal() {
-  document.getElementById('o-number').value='';
-  document.getElementById('o-date').value=new Date().toISOString().slice(0,10);
-  document.getElementById('o-note').value='';
-  openModal('order-modal');
-}
-function saveOrder() {
-  const n=document.getElementById('o-number').value.trim();
-  if(!n){toast('주문번호를 입력하세요','error');return;}
-  const m=members.find(x=>x.id===selectedId);
-  m.orders.unshift({id:uid(),number:n,date:document.getElementById('o-date').value,note:document.getElementById('o-note').value.trim()});
-  save();renderDetail();closeModal('order-modal');toast('주문번호가 추가되었습니다','success');
-}
-function deleteOrder(oid) {
-  const m=members.find(x=>x.id===selectedId);
-  m.orders=m.orders.filter(o=>o.id!==oid);
-  save();renderDetail();
+// ─── 필터 ───
+function setFilter(f, btn) {
+  filter = f;
+  document.querySelectorAll('.f-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderList();
 }
 
-// ── Memo Log ──
-function addMemoLog() {
-  const text=document.getElementById('memo-text').value.trim();
-  const author=document.getElementById('memo-author').value.trim()||'익명';
-  if(!text){toast('메모를 입력하세요','error');return;}
-  const m=members.find(x=>x.id===selectedId);
-  if(!m.memoLog)m.memoLog=[];
-  const now=new Date();
-  const p=n=>String(n).padStart(2,'0');
-  m.memoLog.unshift({id:uid(),text,author,time:`${now.getFullYear()}-${p(now.getMonth()+1)}-${p(now.getDate())} ${p(now.getHours())}:${p(now.getMinutes())}`});
-  save();renderDetail();toast('메모가 저장되었습니다','success');
-}
-function deleteMemoLog(mid) {
-  const m=members.find(x=>x.id===selectedId);
-  m.memoLog=m.memoLog.filter(x=>x.id!==mid);
-  save();renderDetail();
+// ─── 토스트 ───
+function toast(msg, type='ok') {
+  document.querySelectorAll('.toast').forEach(t => t.remove());
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 2800);
 }
 
-// ── Utils ──
-function openModal(id){document.getElementById(id).classList.add('open');}
-function closeModal(id){document.getElementById(id).classList.remove('open');}
-document.querySelectorAll('.modal-overlay').forEach(el=>el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open');}));
-function setFilter(f,btn){currentFilter=f;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderList();}
-function toast(msg,type='success'){const el=document.createElement('div');el.className=`toast ${type}`;el.textContent=msg;document.body.appendChild(el);setTimeout(()=>el.remove(),2500);}
-
-load();
+// ─── 시작 ───
+init();
 renderList();
 </script>
 </body>
